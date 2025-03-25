@@ -28,3 +28,8 @@ type FeedbackRepository interface {
 	AddFeedback(ctx context.Context, feedback *model.FeedbackResult) error
 	CalculateAccuracy(ctx context.Context, predictionID string) (float64, error)
 }
+
+func (r* Resolver) Query() model.QueryResolver {
+	return &queryResolver{r}
+}
+
