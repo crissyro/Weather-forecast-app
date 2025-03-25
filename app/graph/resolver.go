@@ -129,3 +129,19 @@ func (r* mutationResolver) SubmitPredictionFeedback(
 
 	return result, nil
 }
+
+func validateInput(input model.PredictionRequest) error {
+	if input.Location.Latitude < -90 || input.Location.Latitude > 90 {
+		return fmt.Errorf("некорректная широта: %f", input.Location.Latitude)
+	}
+	
+	if input.Location.Longitude < -180 || input.Location.Longitude > 180 {
+		return fmt.Errorf("некорректная долгота: %f", input.Location.Longitude)
+	}
+	
+	if _, err := time.Parse("2006-01-02", input.Date); err != nil {
+		return fmt.Errorf("неверный формат даты: %s", input.Date)
+	}
+
+	return nil
+}
