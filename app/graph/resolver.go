@@ -33,3 +33,6 @@ func (r* Resolver) Query() model.QueryResolver {
 	return &queryResolver{r}
 }
 
+func (r* Resolver) Mutation() model.MutationResolver {
+	return &mutationResolver{r}
+}
