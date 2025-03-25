@@ -15,7 +15,7 @@ type Resolver struct {
 }
 
 type WeatherRepository inteface {
-	SavePrediction(ctx context.Context, p* model.WeatherPrediction) errorconst
+	SavePrediction(ctx context.Context, p* model.WeatherPrediction) error
 	GetPredictionsByDate(ctx context.Context, filter model.HistoryFilter) ([]*model.HistoricalPrediction, error)
 }
 
@@ -35,4 +35,28 @@ func (r* Resolver) Query() model.QueryResolver {
 
 func (r* Resolver) Mutation() model.MutationResolver {
 	return &mutationResolver{r}
+}
+
+type queryResolver struct { *Resolver }
+type mutationResolver struct { *Resolver }
+
+func (r* queryResolver) GetCurrentPrediction(
+	ctx context.Context, 
+	input model.PredictionRequest
+) (*model.Prediction, error) {
+	if err := validateInput(input); err != nil {
+		return nil, fmt.Errorf("неверные входные данные: %v", err)
+	}
+
+	prediction, err := r.ModelService.Predict(ctx, input)
+	
+	if err != nil {
+		return nil, fmt.Errorf("ошибка прогнозирования: %v", err)
+	}
+
+	if err := r.WeatherRepo.SavePrediction(ctx, prediction); err != nil {
+		return nil, fmt.Errorf("ошибка сохранения прогноза: %v", err)
+	}
+
+	return prediction, nil
 }
