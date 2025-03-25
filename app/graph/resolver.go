@@ -100,3 +100,32 @@ func (r* queryResolver) GetAvailableModels(ctx context.Context) ([]*models.Model
     return models, nil
 }
 
+func (r* mutationResolver) SubmitPredictionFeedback(
+	ctx context.Context, 
+    predictionID string,
+    actualWeather model.WeatherInput,
+) (*model.FeedbackResult, error) {
+	if err := validateWeatherInput(actualWeather); err != nil {
+        return nil, fmt.Errorf("неверные данные о погоде: %v", err)
+    }
+
+    accuracy, err := r.FeedbackStore.CalculateAccuracy(ctx, predictionID)
+	if err != nil {
+		return &model.FeedbackResult{
+			Success: false,
+			Message: "Ошибка расчета точности",
+		}, err
+	}
+
+	result := &model.FeedbackResult{
+		Success:     true,
+		NewAccuracy: accuracy,
+		Message:    "Спасибо за ваш фидбэк!",
+	}
+
+	if err := r.FeedbackStore.AddFeedback(ctx, result); err != nil {
+		return nil, fmt.Errorf("ошибка сохранения фидбэка: %v", err)
+	}
+
+	return result, nil
+}
