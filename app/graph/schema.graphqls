@@ -1,28 +1,79 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+## @file app/graph/schema.graphqls
+## @brief Схема GraphQL для сервиса прогнозирования погоды
+## @details
+## Определяет типы данных и методы API для работы с прогнозами температуры
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+## @enum WeatherPrediction
+## @brief Прогноз температуры с метаданными
+type WeatherPrediction {
+  ## @var Float temperature
+  ## @brief Прогнозируемая температура в градусах Цельсия
+  temperature: Float!
+  
+  ## @var Float confidence
+  ## @brief Уверенность прогноза (диапазон 0.0-1.0)
+  confidence: Float!
+  
+  ## @var String timestamp
+  ## @brief Время формирования прогноза в формате ISO 8601
+  timestamp: String!
 }
 
-type User {
-  id: ID!
-  name: String!
+## @struct PredictionInput
+## @brief Входные параметры для формирования прогноза
+input PredictionInput {
+  ## @var Float latitude
+  ## @brief Географическая широта (-90 до 90)
+  latitude: Float!
+  
+  ## @var Float longitude
+  ## @brief Географическая долгота (-180 до 180)
+  longitude: Float!
+  
+  ## @var Float windKph
+  ## @brief Скорость ветра в км/ч
+  windKph: Float!
+  
+  ## @var Int humidity
+  ## @brief Относительная влажность (0-100%)
+  humidity: Int!
+  
+  ## @var Float pressureMb
+  ## @brief Атмосферное давление в миллибарах
+  pressureMb: Float!
+  
+  ## @var Float precipMm
+  ## @brief Количество осадков в мм
+  precipMm: Float!
+  
+  ## @var Int cloud
+  ## @brief Облачность (0-100%)
+  cloud: Int!
+  
+  ## @var Float visibilityKm
+  ## @brief Видимость в километрах
+  visibilityKm: Float!
+  
+  ## @var Float uvIndex
+  ## @brief Ультрафиолетовый индекс (0-11+)
+  uvIndex: Float!
+  
+  ## @var String conditionText
+  ## @brief Текстовое описание погодных условий
+  conditionText: String!
 }
 
+## @class Query
+## @brief Корневой тип для запросов GraphQL
 type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  ## @fn predictWeather
+  ## @brief Получить прогноз температуры
+  ## @param input PredictionInput Входные параметры
+  ## @return WeatherPrediction Результат прогноза
+  predictWeather(input: PredictionInput!): WeatherPrediction!
+  
+  ## @fn getHistoricalData
+  ## @brief Получить исторические данные прогнозов
+  ## @return [WeatherPrediction!]! Список прогнозов
+  getHistoricalData: [WeatherPrediction!]!
 }
