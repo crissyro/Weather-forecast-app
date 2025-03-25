@@ -15,13 +15,16 @@ type Resolver struct {
 }
 
 type WeatherRepository inteface {
-
+	SavePrediction(ctx context.Context, p* model.WeatherPrediction) errorconst
+	GetPredictionsByDate(ctx context.Context, filter model.HistoryFilter) ([]*model.HistoricalPrediction, error)
 }
 
-type ModelProvider inteface {
-    GetModel(ctx context.Context, id string) (*model.Model, error)
+type ModelProvider interface {
+	GetModels() []*model.ModelInfo
+	Predict(ctx context.Context, req model.PredictionRequest) (*model.WeatherPrediction, error)
 }
 
 type FeedbackRepository interface {
-	
+	AddFeedback(ctx context.Context, feedback *model.FeedbackResult) error
+	CalculateAccuracy(ctx context.Context, predictionID string) (float64, error)
 }
