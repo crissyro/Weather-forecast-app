@@ -1,27 +1,32 @@
-## @file app/graph/schema.graphqls
-## @brief Схема GraphQL для сервиса прогнозирования погоды
+## @file schema.graphqls
+## @brief GraphQL-схема для API прогнозирования погоды
 ## @details
-## Определяет типы данных и методы API для работы с прогнозами температуры
+## Схема определяет типы данных, запросы и мутации для сервиса прогнозирования погоды.
+## Включает моделирование метеорологических данных и директивы валидации.
 
-## @enum WeatherPrediction
-## @brief Прогноз температуры с метаданными
-type WeatherPrediction {
-  ## @var Float temperature
-  ## @brief Прогнозируемая температура в градусах Цельсия
-  temperature: Float!
+## @enum WeatherConditions
+## @brief Метеорологические условия
+type WeatherConditions {
+  ## @var String text
+  ## @brief Текстовое описание погоды (например, "Солнечно")
+  text: String!
   
-  ## @var Float confidence
-  ## @brief Уверенность прогноза (диапазон 0.0-1.0)
-  confidence: Float!
+  ## @var Int code
+  ## @brief Код погодных условий (WMO код)
+  code: Int!
   
-  ## @var String timestamp
-  ## @brief Время формирования прогноза в формате ISO 8601
-  timestamp: String!
+  ## @var String iconUrl
+  ## @brief URL иконки погодных условий
+  iconUrl: String!
 }
 
-## @struct PredictionInput
-## @brief Входные параметры для формирования прогноза
-input PredictionInput {
+## @struct Location
+## @brief Географическая локация
+type Location {
+  ## @var String name
+  ## @brief Название локации (например, "Москва")
+  name: String!
+  
   ## @var Float latitude
   ## @brief Географическая широта (-90 до 90)
   latitude: Float!
@@ -30,50 +35,302 @@ input PredictionInput {
   ## @brief Географическая долгота (-180 до 180)
   longitude: Float!
   
-  ## @var Float windKph
-  ## @brief Скорость ветра в км/ч
-  windKph: Float!
+  ## @var String timezone
+  ## @brief Часовой пояс (например, "Europe/Moscow")
+  timezone: String!
+  
+  ## @var Float elevation
+  ## @brief Высота над уровнем моря (метры)
+  elevation: Float!
+}
+
+## @struct DetailedForecast
+## @brief Детализированный прогноз погоды
+type DetailedForecast {
+  ## @var Float temperature
+  ## @brief Температура воздуха (°C)
+  temperature: Float!
+  
+  ## @var Float feelsLike
+  ## @brief Ощущаемая температура (°C)
+  feelsLike: Float!
+  
+  ## @var Float windSpeed
+  ## @brief Скорость ветра (м/с)
+  windSpeed: Float!
+  
+  ## @var String windDirection
+  ## @brief Направление ветра (например, "СВ")
+  windDirection: String!
   
   ## @var Int humidity
   ## @brief Относительная влажность (0-100%)
   humidity: Int!
   
-  ## @var Float pressureMb
-  ## @brief Атмосферное давление в миллибарах
-  pressureMb: Float!
+  ## @var Int uvIndex
+  ## @brief УФ-индекс (0-11+)
+  uvIndex: Int!
   
-  ## @var Float precipMm
-  ## @brief Количество осадков в мм
-  precipMm: Float!
+  ## @var Float visibility
+  ## @brief Видимость (километры)
+  visibility: Float!
   
-  ## @var Int cloud
+  ## @var Int cloudCover
   ## @brief Облачность (0-100%)
-  cloud: Int!
+  cloudCover: Int!
   
-  ## @var Float visibilityKm
-  ## @brief Видимость в километрах
-  visibilityKm: Float!
+  ## @var Float precipitation
+  ## @brief Осадки (мм/ч)
+  precipitation: Float!
   
-  ## @var Float uvIndex
-  ## @brief Ультрафиолетовый индекс (0-11+)
-  uvIndex: Float!
+  ## @var Float pressure
+  ## @brief Атмосферное давление (гПа)
+  pressure: Float!
+}
+
+## @struct WeatherPrediction
+## @brief Прогноз погоды с метаданными
+type WeatherPrediction {
+  ## @var ID id
+  ## @brief Уникальный идентификатор прогноза
+  id: ID!
   
-  ## @var String conditionText
-  ## @brief Текстовое описание погодных условий
-  conditionText: String!
+  ## @var Location location
+  ## @brief Географические координаты
+  location: Location!
+  
+  ## @var DetailedForecast forecast
+  ## @brief Численный прогноз погоды
+  forecast: DetailedForecast!
+  
+  ## @var WeatherConditions conditions
+  ## @brief Текстовое описание условий
+  conditions: WeatherConditions!
+  
+  ## @var String predictionDate
+  ## @brief Дата создания прогноза (ISO 8601)
+  predictionDate: String!
+  
+  ## @var String validUntil
+  ## @brief Срок действия прогноза (ISO 8601)
+  validUntil: String!
+  
+  ## @var Float confidence
+  ## @brief Уровень доверия прогнозу (0.0-1.0)
+  confidence: Float!
+  
+  ## @var String provider
+  ## @brief Поставщик модели
+  provider: String!
+  
+  ## @var String modelVersion
+  ## @brief Версия модели
+  modelVersion: String!
+}
+
+## @struct HistoricalPrediction
+## @brief Исторические данные прогноза
+type HistoricalPrediction {
+  ## @var WeatherPrediction prediction
+  ## @brief Исходный прогноз
+  prediction: WeatherPrediction!
+  
+  ## @var DetailedForecast actualWeather
+  ## @brief Фактические погодные данные
+  actualWeather: DetailedForecast
+  
+  ## @var Float accuracy
+  ## @brief Точность прогноза (0.0-1.0)
+  accuracy: Float
+}
+
+## @struct GeoPosition
+## @brief Географические координаты (входные)
+input GeoPosition {
+  ## @var Float latitude
+  ## @range [-90.0, 90.0]
+  latitude: Float! @constraint(min: -90, max: 90)
+  
+  ## @var Float longitude
+  ## @range [-180.0, 180.0]
+  longitude: Float! @constraint(min: -180, max: 180)
+}
+
+## @struct PredictionRequest
+## @brief Параметры запроса прогноза
+input PredictionRequest {
+  ## @var GeoPosition location
+  ## @brief Геопозиция для прогноза
+  location: GeoPosition!
+  
+  ## @var String date
+  ## @brief Дата прогноза (ГГГГ-ММ-ДД)
+  ## @format "date"
+  date: String! @format(format: "date")
+  
+  ## @var ModelPreferences modelPreferences
+  ## @brief Настройки модели
+  modelPreferences: ModelPreferences
+}
+
+## @struct ModelPreferences
+## @brief Настройки модели прогнозирования
+input ModelPreferences {
+  ## @var String provider
+  ## @brief Провайдер модели ("default")
+  provider: String = "default"
+  
+  ## @var String version
+  ## @brief Версия модели ("latest")
+  version: String = "latest"
+  
+  ## @var Boolean useEnsemble
+  ## @brief Использовать ансамблевый прогноз (false)
+  useEnsemble: Boolean = false
 }
 
 ## @class Query
-## @brief Корневой тип для запросов GraphQL
+## @brief Корневой тип запросов
 type Query {
-  ## @fn predictWeather
-  ## @brief Получить прогноз температуры
-  ## @param input PredictionInput Входные параметры
-  ## @return WeatherPrediction Результат прогноза
-  predictWeather(input: PredictionInput!): WeatherPrediction!
+  ## @fn getCurrentPrediction
+  ## @brief Получить текущий прогноз погоды
+  ## @param input PredictionRequest! Параметры запроса
+  ## @return WeatherPrediction! Объект прогноза
+  getCurrentPrediction(input: PredictionRequest!): WeatherPrediction!
   
-  ## @fn getHistoricalData
-  ## @brief Получить исторические данные прогнозов
-  ## @return [WeatherPrediction!]! Список прогнозов
-  getHistoricalData: [WeatherPrediction!]!
+  ## @fn getHistoricalPredictions
+  ## @brief Получить исторические прогнозы
+  ## @param location GeoPosition! Геопозиция
+  ## @param dateFrom String! Начальная дата (ГГГГ-ММ-ДД)
+  ## @param dateTo String! Конечная дата (ГГГГ-ММ-ДД)
+  ## @return [HistoricalPrediction!]! Список прогнозов
+  getHistoricalPredictions(
+    location: GeoPosition!
+    dateFrom: String! @format(format: "date")
+    dateTo: String! @format(format: "date")
+  ): [HistoricalPrediction!]!
+
+  ## @fn getAvailableModels
+  ## @brief Получить доступные модели
+  ## @return [ModelInfo!]! Список моделей
+  getAvailableModels: [ModelInfo!]!
 }
+
+## @class Mutation
+## @brief Корневой тип мутаций
+type Mutation {
+  ## @fn submitPredictionFeedback
+  ## @brief Отправить обратную связь по прогнозу
+  ## @param predictionId ID! ID прогноза
+  ## @param actualWeather WeatherInput! Фактические данные
+  ## @return FeedbackResult! Результат обработки
+  submitPredictionFeedback(
+    predictionId: ID!
+    actualWeather: WeatherInput!
+  ): FeedbackResult!
+}
+
+## @struct ModelInfo
+## @brief Информация о модели
+type ModelInfo {
+  ## @var String name
+  ## @brief Название модели
+  name: String!
+  
+  ## @var String version
+  ## @brief Версия модели
+  version: String!
+  
+  ## @var String provider
+  ## @brief Поставщик модели
+  provider: String!
+  
+  ## @var String description
+  ## @brief Описание модели
+  description: String!
+  
+  ## @var [ModelParameter!] parameters
+  ## @brief Параметры модели
+  parameters: [ModelParameter!]!
+}
+
+## @struct ModelParameter
+## @brief Параметр модели
+type ModelParameter {
+  ## @var String name
+  ## @brief Название параметра
+  name: String!
+  
+  ## @var ParameterType type
+  ## @brief Тип параметра
+  type: ParameterType!
+  
+  ## @var String defaultValue
+  ## @brief Значение по умолчанию
+  defaultValue: String!
+  
+  ## @var String description
+  ## @brief Описание параметра
+  description: String!
+}
+
+## @enum ParameterType
+## @brief Типы параметров модели
+enum ParameterType {
+  FLOAT    ## Число с плавающей точкой
+  INT      ## Целое число
+  BOOL     ## Логическое значение
+  STRING   ## Строка
+}
+
+## @struct WeatherInput
+## @brief Входные погодные данные
+input WeatherInput {
+  ## @var Float temperature
+  ## @brief Температура (°C)
+  temperature: Float!
+  
+  ## @var Int humidity
+  ## @brief Влажность (%)
+  humidity: Int!
+  
+  ## @var Float windSpeed
+  ## @brief Скорость ветра (м/с)
+  windSpeed: Float!
+  
+  ## @var Float precipitation
+  ## @brief Осадки (мм/ч)
+  precipitation: Float!
+  
+  ## @var Float pressure
+  ## @brief Давление (гПа)
+  pressure: Float!
+}
+
+## @struct FeedbackResult
+## @brief Результат обработки обратной связи
+type FeedbackResult {
+  ## @var Boolean success
+  ## @brief Успешность операции
+  success: Boolean!
+  
+  ## @var Float newAccuracy
+  ## @brief Новая оценка точности
+  newAccuracy: Float
+  
+  ## @var String message
+  ## @brief Сообщение о результате
+  message: String
+}
+
+## @directive @constraint
+## @brief Валидация числовых значений
+directive @constraint(
+  min: Float  ## Минимальное значение
+  max: Float  ## Максимальное значение
+  pattern: String  ## Регулярное выражение
+) on INPUT_FIELD_DEFINITION
+
+## @directive @format
+## @brief Проверка формата строки
+directive @format(format: String) on INPUT_FIELD_DEFINITION
