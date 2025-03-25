@@ -15,7 +15,7 @@ type Resolver struct {
 }
 
 type WeatherRepository inteface {
-	SavePrediction(ctx context.Context, p* model.WeatherPrediction) error
+	SavePrediction(ctx context.Context, p *model.WeatherPrediction) error
 	GetPredictionsByDate(ctx context.Context, filter model.HistoryFilter) ([]*model.HistoricalPrediction, error)
 }
 
@@ -29,11 +29,11 @@ type FeedbackRepository interface {
 	CalculateAccuracy(ctx context.Context, predictionID string) (float64, error)
 }
 
-func (r* Resolver) Query() model.QueryResolver {
+func (r *Resolver) Query() model.QueryResolver {
 	return &queryResolver{r}
 }
 
-func (r* Resolver) Mutation() model.MutationResolver {
+func (r *Resolver) Mutation() model.MutationResolver {
 	return &mutationResolver{r}
 }
 
@@ -49,7 +49,7 @@ func (r* queryResolver) GetCurrentPrediction(
 	}
 
 	prediction, err := r.ModelService.Predict(ctx, input)
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("ошибка прогнозирования: %v", err)
 	}
@@ -59,4 +59,33 @@ func (r* queryResolver) GetCurrentPrediction(
 	}
 
 	return prediction, nil
+}
+
+func (r* queryResolver) GetHistoricalPredictions (
+	ctx context.Context, 
+    location *model.GeoPositionn,
+	dateForm string,
+	dateTo string,
+) ([]*model.HistoricalPrediction, error) {
+	if location == nil {
+        return nil, fmt.Errorf("не указана геопозиция")
+    }
+
+    if err := validateDate(dateForm, dateTo); err != nil {
+        return nil, fmt.Errorf("неверные даты: %v", err)
+    }
+
+    filter := model.HistoryFilter{
+        Location: location,
+        DateFrom:     dateForm,
+        DateTo:       dateTo,
+    }
+
+    predictions, err := r.WeatherRepo.GetPredictionsByDate(ctx, filter)
+
+    if err != nil {
+        return nil, fmt.Errorf("ошибка получения исторических прогнозов: %v", err)
+    }
+
+    return r.WeatherRepo.GetPredictionsByDate(ctx, filter), nil
 }
