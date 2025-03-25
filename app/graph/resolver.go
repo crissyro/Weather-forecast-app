@@ -89,3 +89,14 @@ func (r* queryResolver) GetHistoricalPredictions (
 
     return r.WeatherRepo.GetPredictionsByDate(ctx, filter), nil
 }
+
+func (r* queryResolver) GetAvailableModels(ctx context.Context) ([]*models.ModelInfo, error) {
+	models := r.ModelService.GetModels()
+
+    if len(models) == 0 {
+        return nil, fmt.Errorf("нет доступных моделей")
+    }
+
+    return models, nil
+}
+
