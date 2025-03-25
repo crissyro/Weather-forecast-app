@@ -163,11 +163,9 @@ input PredictionRequest {
   ## @brief Геопозиция для прогноза
   location: GeoPosition!
   
-  ## @var String date
-  ## @brief Дата прогноза (ГГГГ-ММ-ДД)
-  ## @format "date"
-  date: String! @format(format: "date")
-  
+  ## @var String date	r.mu.RLock()
+	defer r.mu.RUnlock()
+	// Фильтрация по датам
   ## @var ModelPreferences modelPreferences
   ## @brief Настройки модели
   modelPreferences: ModelPreferences
@@ -304,11 +302,9 @@ input WeatherInput {
   
   ## @var Float pressure
   ## @brief Давление (гПа)
-  pressure: Float!
-}
-
-## @struct FeedbackResult
-## @brief Результат обработки обратной связи
+  pressure: Float!	r.mu.RLock()
+	defer r.mu.RUnlock()
+	// Фильтрация по датам
 type FeedbackResult {
   ## @var Boolean success
   ## @brief Успешность операции

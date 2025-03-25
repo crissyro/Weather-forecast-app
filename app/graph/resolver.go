@@ -1,7 +1,27 @@
 package graph
 
-// This file will not be regenerated automatically.
-//
-// It serves as dependency injection for your app, add any dependencies you require here.
+import (
+	"context"
+    "fmt"
+	"time"
 
-type Resolver struct{}
+    "github.com/crissyro/weatherapi/graph/model"
+)
+
+type Resolver struct {
+	WeatherRepo WeatherRepository
+	ModelService ModelProvider
+	FeedbackStore FeedbackRepository
+}
+
+type WeatherRepository inteface {
+
+}
+
+type ModelProvider inteface {
+    GetModel(ctx context.Context, id string) (*model.Model, error)
+}
+
+type FeedbackRepository interface {
+	
+}
