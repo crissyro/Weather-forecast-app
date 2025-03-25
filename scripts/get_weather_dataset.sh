@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## @file download_weather_data.sh
+## @file scripts/get_weather_dataset.sh
 ## @brief Скрипт для загрузки и обработки данных о погоде
 ## @details
 ## Скрипт выполняет следующие действия:
